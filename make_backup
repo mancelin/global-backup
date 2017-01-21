@@ -41,7 +41,7 @@ if __name__ == '__main__':
   output = ps.communicate()[0].decode("utf-8")
   next_v = len(output.split("\n"))
   dest_backup += "_v{}".format(next_v)
-  print("dest_backup: {}".format(dest_backup))
+  print("Making backup in folder: {}".format(dest_backup))
   system("mkdir -p {}".format(dest_backup))
   back_all()
 
