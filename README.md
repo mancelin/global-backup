@@ -10,12 +10,12 @@ Edit **~/.make-backup** to configure the files to track.
 
 * Clone or download this repository
 ```
-    git clone git@github.com:mancelin/make-backup.git
+    $ git clone git@github.com:mancelin/make-backup.git
 ```
 * Add make-backup to your path, for example by editing ~/.bashrc
 ```
-    cd make-backup
-    echo "export PATH=`pwd`:$PATH" >> ~/.bashrc
+    $ cd make-backup
+    $ echo "export PATH=`pwd`:$PATH" >> ~/.bashrc
 ```
 
 ## Use
@@ -24,8 +24,50 @@ Edit **~/.make-backup** to configure the files to track.
 
 * run make_backup :
 ```
-make_backup FOLDER_DESTINATION_BACKUP
+    $ make_backup FOLDER_DESTINATION_BACKUP
 ```
+
+## Example
+
+Content ~/.global-backup :
+```
+    $ cat ~/.global-backup
+
+    /home/user/.global-backup
+    /home/user/2 words
+    /home/user/cmd
+```
+
+Run make_backup :
+```
+    $ make_backup example_backup
+```
+
+This command produces the folder example_backup_21_01_2017_v1
+
+Content of our first backup :
+
+```
+    $ tree -a example_backup_2017_1_21_v1/
+    example_backup_2017_1_21_v1/
+    ├── .backuped
+    └── home
+        └── user
+            ├── 2 words
+            │   └── d.txt
+            ├── config.git
+            │   └── cmd
+            │       ├── catbash
+            │       ├── make_backup
+            │       ├── tarv
+            │       ├── tarvc
+            │       └── up_perl
+            └── .global-backup
+```
+
+Running it again will produce example_backup_21_01_2017_v2, etc.
+
+If we run it the next day, it will produce the folder example_backup_22_01_2017_v1
 
 ## Licence
 GNU GENERAL PUBLIC LICENSE
