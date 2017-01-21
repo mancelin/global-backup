@@ -1,0 +1,48 @@
+#!/usr/bin/python3
+# -*- coding: UTF-8 -*-
+
+from datetime import date
+from os import path, system
+import subprocess
+import sys
+
+dest_backup = "BACKUP"
+
+def back_all():
+  f_backuped = open(dest_backup + "/.backuped", 'w')
+  with open(path.expanduser("~/.make-backup")) as f:
+    for line in f:
+      line = line.replace("\n", "")
+      print(">> {}".format(line))
+      if (path.exists(line)):
+        if (path.islink(line)):
+          realpath = path.realpath(line)
+          print("Warning: {} is a link, adding realpath: {}".format(line, realpath))
+          f_backuped.write("{} -> {}\n".format(line, realpath))
+          line = realpath
+        else:
+          f_backuped.write("{}\n".format(line))
+        dirname, basename = path.split(line)
+        back_dir = dest_backup + dirname;
+        system("mkdir -p {}".format(back_dir))
+        line = line.replace(" ", "\\ ")
+        system("cp -r {} {}".format(line, back_dir))
+  f_backuped.close()
+
+
+if __name__ == '__main__':
+  if (len(sys.argv) > 1):
+    dest_backup = sys.argv[1]
+  today = date.today()
+  date_string = "_{}_{}_{}".format(today.year, today.month, today.day)
+  dest_backup += date_string
+  cmd = "ls | grep {}".format(dest_backup)
+  ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  output = ps.communicate()[0].decode("utf-8")
+  next_v = len(output.split("\n"))
+  dest_backup += "_v{}".format(next_v)
+  print("dest_backup: {}".format(dest_backup))
+  system("mkdir -p {}".format(dest_backup))
+  back_all()
+
+
