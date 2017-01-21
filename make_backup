@@ -10,7 +10,7 @@ dest_backup = "BACKUP"
 
 def back_all():
   f_backuped = open(dest_backup + "/.backuped", 'w')
-  with open(path.expanduser("~/.make-backup")) as f:
+  with open(path.expanduser("~/.global-backup")) as f:
     for line in f:
       line = line.replace("\n", "")
       print(">> {}".format(line))
