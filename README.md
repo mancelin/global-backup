@@ -24,6 +24,11 @@ Edit **~/.make-backup** to configure the files to track.
 
 * Edit **~/.make-backup**, adding one line per file or folder (full path)
 
+Add current folder to **~/.make-backup** :
+```
+    $ pwd >> ~/.global-backup
+```
+
 * run **make_backup** :
 ```
     $ make_backup FOLDER_DESTINATION_BACKUP
