@@ -32,7 +32,10 @@ def back_all():
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
-  parser.add_argument("dest_backup", nargs='?', default="BACKUP", help="Optional base folder name of backup. Default: BACKUP")
+  parser.add_argument("dest_backup", nargs='?', default="BACKUP",
+                      help="Optional base folder name of backup. Default: BACKUP")
+  parser.add_argument("-c", "--compress", action="store_true",
+                     help="Compress the backup in a .tar.gz")
   args = parser.parse_args()
   dest_backup = args.dest_backup
   today = date.today()
@@ -46,5 +49,9 @@ if __name__ == '__main__':
   print("Making backup in folder: {}".format(dest_backup))
   system("mkdir -p {}".format(dest_backup))
   back_all()
+  if (args.compress):
+    dest_backup_targz = dest_backup + ".tar.gz"
+    print("Compressing backup in file: {}\nRemoving {}".format(dest_backup_targz, dest_backup))
+    system("tar --remove-files -cvzf {} {}".format(dest_backup_targz, dest_backup))
 
 
