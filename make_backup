@@ -29,9 +29,23 @@ def back_all():
         system("cp -r {} {}".format(line, back_dir))
   f_backuped.close()
 
+def help():
+  help = """Use: make_backup [OPTION..] [NAME_BACKUP]
+Backup files and folders listed on ~/.global-backup to NAME_BACKUP_date_version or in BACKUP_date_version if used without parameters
+
+Options:
+  -c, --compress        Compress the backup in a .tar.gz
+  -h, --help            Display this help screen
+"""
+  print(help)
+
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser()
+  # Use Custom Parser in order to display a better help screen
+  class CustomParser(argparse.ArgumentParser):
+    def format_help(self):
+      help()
+  parser = CustomParser()
   parser.add_argument("dest_backup", nargs='?', default="BACKUP",
                       help="Optional base folder name of backup. Default: BACKUP")
   parser.add_argument("-c", "--compress", action="store_true",
