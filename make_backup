@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
+import argparse
 from datetime import date
 from os import path, system
 import subprocess
-import sys
 
 dest_backup = "BACKUP"
 
@@ -31,8 +31,10 @@ def back_all():
 
 
 if __name__ == '__main__':
-  if (len(sys.argv) > 1):
-    dest_backup = sys.argv[1]
+  parser = argparse.ArgumentParser()
+  parser.add_argument("dest_backup", nargs='?', default="BACKUP", help="Optional base folder name of backup. Default: BACKUP")
+  args = parser.parse_args()
+  dest_backup = args.dest_backup
   today = date.today()
   date_string = "_{}_{}_{}".format(today.year, today.month, today.day)
   dest_backup += date_string
