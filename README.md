@@ -32,6 +32,8 @@ Options:
 
   -h, --help            Display this help screen  help = """Use: make_backup \[OPTION..] [NAME_BACKUP]
 
+## Quick start
+
 * Edit **~/.make-backup**, adding one line per file or folder (full path)
 
   Add current folder to **~/.make-backup** :
