@@ -2,7 +2,9 @@
 Backup files and folders listed on a config file.
 
 
-**make_backup** allows you to copy very easily a list of files or folders and their path in a folder passed on parameter.
+**make_backup** allows you to copy very easily a list of files or folders and their path in a folder passed on parameter (or folder **BACKUP** if used without parameters).
+
+The created folders end with a suffix according to date and version.
 
 Edit **~/.make-backup** to configure the files to track.
 
@@ -22,14 +24,15 @@ Edit **~/.make-backup** to configure the files to track.
 
 * Edit **~/.make-backup**, adding one line per file or folder (full path)
 
-* run make_backup :
+* run **make_backup** :
 ```
     $ make_backup FOLDER_DESTINATION_BACKUP
 ```
+The argument is optional, if not precised, **make_backup** will create the folder BACKUP, acoording to date and version.
 
 ## Example
 
-Content ~/.global-backup :
+Content **~/.global-backup** :
 ```
     $ cat ~/.global-backup
 
@@ -38,7 +41,7 @@ Content ~/.global-backup :
     /home/user/cmd
 ```
 
-Run make_backup :
+Run **make_backup** :
 ```
     $ make_backup example_backup
 ```
