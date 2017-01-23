@@ -1,0 +1,66 @@
+#!/usr/bin/python3
+# -*- coding: UTF-8 -*-
+
+import argparse
+from datetime import date
+from os import path, system
+import subprocess
+import re
+
+backup = ""
+
+def deploy_backup_from_folder():
+  with open(backup + "/.backuped") as f:
+    for line in f:
+      line = line.replace("\n", "")
+      print(">> {}".format(line))
+      item_and_link = line.split(" -> ")
+      link = ""
+      if (len(item_and_link) == 1):  # no symlink
+        dest = item_and_link[0]
+      else:
+        link = item_and_link[0].replace(" ", "\\ ")
+        dest = item_and_link[1]
+      dest = dest.replace(" ", "\\ ")
+      origin = backup + dest
+      print("origin : {}".format(origin))
+      print("dest : {}".format(dest))
+      print("link : {}".format(link))
+      system("cp -r {} {}".format(origin, dest))
+      if (link != ""):
+        system("mkdir -p {}".format(path.dirname(link)))
+        system("ln -s {} {}".format(dest, link))
+
+
+
+def help():
+  help = """Use: deploy_backup [OPTION..] [BACKUP]
+Deploy backup files and folders and restore symlinks.
+
+Options:
+  -h, --help            Display this help screen
+"""
+  print(help)
+
+
+if __name__ == '__main__':
+  # Use Custom Parser in order to display a better help screen
+  class CustomParser(argparse.ArgumentParser):
+    def format_help(self):
+      help()
+  parser = CustomParser()
+  parser.add_argument("backup", help="Backup folder or file (.tar.gz)")
+  args = parser.parse_args()
+  backup = args.backup
+  if (path.exists(backup)):
+    if (path.isdir(backup)):
+      print("Deploying backup from dir {}".format(backup))
+      deploy_backup_from_folder()
+    elif (path.isfile(backup) and bool(re.search("\.tar\.gz$", backup))):
+      print("Deploying backup from .tar.gz file {}".format(backup))
+      # TODO
+    else:
+      print("Error: \"{}\" is neither a folder or a .tar.gz".format(backup))
+  else:
+    print("Error: file \"{}\" don't exist".format(backup))
+
