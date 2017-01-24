@@ -40,6 +40,7 @@ def deploy_backup_from_folder():
       system("mkdir -p {}".format(path.dirname(dest)))
       system("cp -r {} {}".format(origin, dest))
       if (link != ""):
+        print("Restoring symlink: {} -> {}".format(link, dest))
         system("mkdir -p {}".format(path.dirname(link)))
         system("ln -s {} {}".format(dest, link))
 
@@ -95,6 +96,10 @@ def deploy_backup_from_targz():
         system("echo -- mv {} {}".format(rand_dirname_origin, parent_dest))
         # rm tmp dir
         system("echo -- rm -rf {}".format(rand_dirname))
+      if (link != ""):
+        print("Restoring symlink: {} -> {}".format(link, dest))
+        system("mkdir -p {}".format(path.dirname(link)))
+        system("echo -- ln -s {} {}".format(dest, link))
   tar.close()
 
 
