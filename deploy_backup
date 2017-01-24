@@ -4,10 +4,15 @@
 import argparse
 from datetime import date
 from os import path, system
+import string
 import subprocess
+import tarfile
+import random
 import re
 
+
 backup = ""
+upercase_and_digits = string.ascii_uppercase + string.digits
 
 
 def make_item_and_link(backup, line, debug = False):
@@ -38,6 +43,60 @@ def deploy_backup_from_folder():
         system("mkdir -p {}".format(path.dirname(link)))
         system("ln -s {} {}".format(dest, link))
 
+def random_string():
+  return "".join(random.choice(upercase_and_digits) for _ in range(6))
+
+def deploy_backup_from_targz():
+  print("backup : {}".format(backup))
+  tar = tarfile.open(backup, "r:gz")
+  backup_no_targz = backup.replace(".tar.gz", "")
+  member_backuped = tar.getmember(backup_no_targz + "/.backuped")
+  print("member_backuped : {}".format(member_backuped))
+  with tar.extractfile(member_backuped) as f:
+    for line in f:
+      line = line.decode("utf-8")
+      line = line.replace("\n", "")
+      print(">> {}".format(line))
+      (origin, dest, link) = make_item_and_link(backup_no_targz, line, True)
+      unescaped_origin = origin.replace("\\ ", " ")
+      member = tar.getmember(unescaped_origin)
+      print(member)
+      rand_dirname = ""
+      dirname = path.dirname(dest)
+      system("echo -- mkdir -p {}".format(dirname))
+      if (member.isfile()):
+        print("------ FILE")
+        # make tmp dir (verify it don't already exists)
+        while True:
+          rand_dirname = dirname + "_" + random_string()
+          print("rand_dirname : {}".format(rand_dirname))
+          if (not path.exists(rand_dirname)):
+            break;
+        system("echo -- mkdir -p {}".format(rand_dirname))
+        # untar in tmp dir
+        tar.extract(member, path=rand_dirname)
+        rand_dirname_origin = rand_dirname + "/" + origin
+        system("echo -- mv {} {}".format(rand_dirname_origin, dest))
+        # rm tmp dir
+        system("echo -- rm -rf {}".format(rand_dirname))
+      elif (member.isdir()):
+        print("------ DIR")
+        while True:
+          rand_dirname = dest + "_" + random_string()
+          print("rand_dirname : {}".format(rand_dirname))
+          if (not path.exists(rand_dirname)):
+            break;
+        system("echo -- mkdir -p {}".format(rand_dirname))
+        # untar in tmp dir
+#        tar.extract(member, path=rand_dirname)
+        rand_dirname_origin = rand_dirname + "/" + origin
+        parent_dest = path.dirname(dest)
+        system("echo -- mkdir -p {}".format(parent_dest))
+        system("echo -- mv {} {}".format(rand_dirname_origin, parent_dest))
+        # rm tmp dir
+        system("echo -- rm -rf {}".format(rand_dirname))
+  tar.close()
+
 
 
 def help():
@@ -65,7 +124,7 @@ if __name__ == '__main__':
       deploy_backup_from_folder()
     elif (path.isfile(backup) and bool(re.search("\.tar\.gz$", backup))):
       print("Deploying backup from .tar.gz file {}".format(backup))
-      # TODO
+      deploy_backup_from_targz()
     else:
       print("Error: \"{}\" is neither a folder or a .tar.gz".format(backup))
   else:
