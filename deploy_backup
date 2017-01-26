@@ -125,7 +125,7 @@ def help():
 Deploy backup files and folders and restore symlinks.
 
 Options:
-  -d, --dry             Dry run, print just all the commands that will be run by make_backup
+  -d, --dry             Dry run, print just all the commands that will be run by deploy_backup
   -h, --help            Display this help screen
   -v, --verbose         Print each command that will be run
 """
@@ -140,7 +140,7 @@ if __name__ == '__main__':
   parser = CustomParser()
   parser.add_argument("backup", help="Backup folder or file (.tar.gz)")
   parser.add_argument("-d", "--dry", action="store_true",
-                     help="Dry run, print just all the commands that will be run by make_backup")
+                     help="Dry run, print just all the commands that will be run by deploy_backup")
   parser.add_argument("-v", "--verbose", action="store_true",
                      help="Print each command that will be run")
   args = parser.parse_args()
