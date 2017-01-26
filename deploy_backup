@@ -79,16 +79,14 @@ def deploy_backup_from_targz():
       if (not make_just_link):
         unescaped_origin = origin.replace("\\ ", " ")
         member = tar.getmember(unescaped_origin)
-        print(member)
         rand_dirname = ""
         dirname = path.dirname(dest)
         system_and_log("mkdir -p {}".format(dirname))
         if (member.isfile()):
-          print("------ FILE")
+#          print("------ FILE")
           # make tmp dir (verify it don't already exists)
           while True:
             rand_dirname = dirname + "_" + random_string()
-            print("rand_dirname : {}".format(rand_dirname))
             if (not path.exists(rand_dirname)):
               break;
           system_and_log("mkdir -p {}".format(rand_dirname))
@@ -100,10 +98,9 @@ def deploy_backup_from_targz():
           # rm tmp dir
           system_and_log("rm -rf {}".format(rand_dirname))
         elif (member.isdir()):
-          print("------ DIR")
+#          print("------ DIR")
           while True:
             rand_dirname = dest + "_" + random_string()
-            print("rand_dirname : {}".format(rand_dirname))
             if (not path.exists(rand_dirname)):
               break;
           system_and_log("mkdir -p {}".format(rand_dirname))
@@ -112,7 +109,6 @@ def deploy_backup_from_targz():
             tar.extract(member, path=rand_dirname)
           rand_dirname_origin = rand_dirname + "/" + origin
           parent_dest = path.dirname(dest)
-          system_and_log("mkdir -p {}".format(parent_dest))
           system_and_log("mv {} {}".format(rand_dirname_origin, parent_dest))
           # rm tmp dir
           system_and_log("rm -rf {}".format(rand_dirname))
