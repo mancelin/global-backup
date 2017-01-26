@@ -1,12 +1,13 @@
 # global-backup
-Backup files and folders listed on a config file.
-
+Backup files and folders listed on a config file. Easily restore a backup.
 
 **make_backup** allows you to copy very easily a list of files or folders and their path in a folder passed on parameter (or folder **BACKUP** if used without parameters).
 
 The created folders end with a suffix according to date and version.
 
 Edit **~/.make-backup** to configure the files to track.
+
+**deploy_backup** allows you to restore a backup previously created with **make_backup**.
 
 ## Installation
 
@@ -16,27 +17,15 @@ Edit **~/.make-backup** to configure the files to track.
 ```
 * Add make-backup to your path, for example by editing ~/.bashrc
 ```
-    $ cd make-backup
+    $ cd global-backup
     $ echo "export PATH=`pwd`:$PATH" >> ~/.bashrc
 ```
 
-## Use
-
-Use: make_backup \[OPTION..] [NAME_BACKUP]
-
-Backup files and folders listed on ~/.global-backup to NAME_BACKUP_date_version or in BACKUP_date_version if used without parameters
-
-Options:
-
-  -c, --compress        Compress the backup in a .tar.gz
-
-  -h, --help            Display this help screen  help = """Use: make_backup \[OPTION..] [NAME_BACKUP]
-
 ## Quick start
 
-* Edit **~/.make-backup**, adding one line per file or folder (full path)
+* Edit **~/.global-backup**, adding one line per file or folder (full path)
 
-  Add current folder to **~/.make-backup** :
+  Add current folder to **~/.global-backup** :
 ```
     $ pwd >> ~/.global-backup
 ```
@@ -46,6 +35,39 @@ Options:
     $ make_backup NAME_BACKUP
 ```
 The argument is optional, if not precised, **make_backup** will create the folder BACKUP, acoording to date and version.
+
+
+## Use - make_backup
+
+Use: make_backup \[OPTION..] [NAME_BACKUP]
+
+Backup files and folders listed on ~/.global-backup to NAME_BACKUP_date_version or in BACKUP_date_version if used without parameters
+
+Options:
+
+  -c, --compress        Compress the backup in a .tar.gz
+  
+  -d, --dry             Dry run, print just all the commands that will be run by make_backup
+
+  -h, --help            Display this help screen  help = """Use: make_backup \[OPTION..] [NAME_BACKUP]
+  
+  -v, --verbose         Print each command that will be run
+
+
+## Use - deploy_backup
+
+Use: deploy_backup \[OPTION..] [BACKUP]
+
+Deploy backup files and folders and restore symlinks.
+
+Options:
+
+  -d, --dry             Dry run, print just all the commands that will be run by deploy_backup
+
+  -h, --help            Display this help screen
+
+  -v, --verbose         Print each command that will be run
+
 
 ## Example
 
