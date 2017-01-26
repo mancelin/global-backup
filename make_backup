@@ -32,6 +32,15 @@ def back_all():
         system("mkdir -p {}".format(back_dir))
         line = line.replace(" ", "\\ ")
         system("cp -r {} {}".format(line, back_dir))
+      else:
+        m = re.match("(^-\s*)(.*)", line)
+        # Save just symlink if line prefixed by "- "
+        if (m != None):
+          item = m.group(2)
+          if (path.islink(item)):
+            print("Saving symlink {}".format(item))
+            realpath = path.realpath(item)
+            f_backuped.write("{} -> {}\n".format(item, realpath))
   f_backuped.close()
 
 def help():
