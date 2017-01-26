@@ -8,10 +8,16 @@ import re
 import subprocess
 
 dest_backup = "BACKUP"
-prefix_run = ""
+args = None
+
+def system_and_log(cmd):
+  if (args.verbose or args.dry):
+    system("echo {}".format(cmd))
+  if (not args.dry):
+    system(cmd)
 
 def back_all():
-  if (prefix_run == ""):
+  if (not args.dry):
     f_backuped = open(dest_backup + "/.backuped", 'w')
   with open(path.expanduser("~/.global-backup")) as f:
     for line in f:
@@ -25,17 +31,17 @@ def back_all():
         if (path.islink(line)):
           realpath = path.realpath(line)
           print("Warning: {} is a link, adding realpath: {}".format(line, realpath))
-          if (prefix_run == ""):
+          if (not args.dry):
             f_backuped.write("{} -> {}\n".format(line, realpath))
           line = realpath
         else:
-          if (prefix_run == ""):
+          if (not args.dry):
             f_backuped.write("{}\n".format(line))
         dirname, basename = path.split(line)
         back_dir = dest_backup + dirname;
-        system("{}mkdir -p {}".format(prefix_run, back_dir))
+        system_and_log("mkdir -p {}".format(back_dir))
         line = line.replace(" ", "\\ ")
-        system("{}cp -r {} {}".format(prefix_run, line, back_dir))
+        system_and_log("cp -r {} {}".format(line, back_dir))
       else:
         m = re.match("(^-\s*)(.*)", line)
         # Save just symlink if line prefixed by "- "
@@ -44,9 +50,9 @@ def back_all():
           if (path.islink(item)):
             print("Saving just symlink {}".format(item))
             realpath = path.realpath(item)
-            if (prefix_run == ""):
+            if (not args.dry):
               f_backuped.write("- {} -> {}\n".format(item, realpath))
-  if (prefix_run == ""):
+  if (not args.dry):
     f_backuped.close()
 
 def help():
@@ -56,6 +62,7 @@ Backup files and folders listed on ~/.global-backup to NAME_BACKUP_date_version 
 Options:
   -c, --compress        Compress the backup in a .tar.gz
   -d, --dry             Dry run, print just all the commands that will be run by make_backup
+  -v, --verbose         Print each command that will be run
   -h, --help            Display this help screen
 """
   print(help)
@@ -73,6 +80,8 @@ if __name__ == '__main__':
                      help="Compress the backup in a .tar.gz")
   parser.add_argument("-d", "--dry", action="store_true",
                      help="Dry run, print just all the commands that will be run by make_backup")
+  parser.add_argument("-v", "--verbose", action="store_true",
+                     help="Print each command that will be run")
   args = parser.parse_args()
   dest_backup = args.dest_backup
   today = date.today()
@@ -85,13 +94,12 @@ if __name__ == '__main__':
   dest_backup += "_v{}".format(next_v)
   if (args.dry):
     print("The following commands will be run by make_backup : ")
-    prefix_run = "echo "
   print("Making backup in folder: {}".format(dest_backup))
-  system("{}mkdir -p {}".format(prefix_run, dest_backup))
+  system_and_log("mkdir -p {}".format(dest_backup))
   back_all()
   if (args.compress):
     dest_backup_targz = dest_backup + ".tar.gz"
     print("Compressing backup in file: {}\nRemoving {}".format(dest_backup_targz, dest_backup))
-    system("{}tar --remove-files -cvzf {} {}".format(prefix_run, dest_backup_targz, dest_backup))
+    system_and_log("tar --remove-files -cvzf {} {}".format(dest_backup_targz, dest_backup))
 
 
