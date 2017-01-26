@@ -62,8 +62,8 @@ Backup files and folders listed on ~/.global-backup to NAME_BACKUP_date_version 
 Options:
   -c, --compress        Compress the backup in a .tar.gz
   -d, --dry             Dry run, print just all the commands that will be run by make_backup
-  -v, --verbose         Print each command that will be run
   -h, --help            Display this help screen
+  -v, --verbose         Print each command that will be run
 """
   print(help)
 
