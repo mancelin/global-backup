@@ -42,10 +42,10 @@ def back_all():
         if (m != None):
           item = m.group(2)
           if (path.islink(item)):
-            print("Saving symlink {}".format(item))
+            print("Saving just symlink {}".format(item))
             realpath = path.realpath(item)
             if (prefix_run == ""):
-              f_backuped.write("{} -> {}\n".format(item, realpath))
+              f_backuped.write("- {} -> {}\n".format(item, realpath))
   if (prefix_run == ""):
     f_backuped.close()
 
