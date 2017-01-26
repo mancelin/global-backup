@@ -17,6 +17,7 @@ prefix_run = ""
 
 
 def make_item_and_link(backup, line, debug = False):
+  print(">> {}".format(line))
   # remove all blank spaces at the beginning of line
   line = re.sub("^\s*", "", line)
   # remove all blank spaces at the end of line
@@ -25,10 +26,15 @@ def make_item_and_link(backup, line, debug = False):
   print(">> {}".format(line))
   item_and_link = line.split(" -> ")
   link = ""
+  make_just_link = False
   if (len(item_and_link) == 1):  # no symlink
     dest = item_and_link[0]
   else:
-    link = item_and_link[0].replace(" ", "\\ ")
+    link = item_and_link[0]
+    m = re.match("(- )?(.*$)", link)
+    make_just_link, link = m.groups()
+    make_just_link = bool(make_just_link)
+    link = link.replace(" ", "\\ ")
     dest = item_and_link[1]
   dest = dest.replace(" ", "\\ ")
   origin = backup + dest
@@ -36,14 +42,16 @@ def make_item_and_link(backup, line, debug = False):
     print("origin : {}".format(origin))
     print("dest : {}".format(dest))
     print("link : {}".format(link))
-  return (origin, dest, link)
+    print("make_just_link: {}".format(make_just_link))
+  return (origin, dest, link, make_just_link)
 
 def deploy_backup_from_folder():
   with open(backup + "/.backuped") as f:
     for line in f:
-      (origin, dest, link) = make_item_and_link(backup, line)
-      system("{}mkdir -p {}".format(prefix_run, path.dirname(dest)))
-      system("{}cp -r {} {}".format(prefix_run, origin, dest))
+      (origin, dest, link, make_just_link) = make_item_and_link(backup, line, True)
+      if (not make_just_link):
+        system("{}mkdir -p {}".format(prefix_run, path.dirname(dest)))
+        system("{}cp -r {} {}".format(prefix_run, origin, dest))
       if (link != ""):
         print("Restoring symlink: {} -> {}".format(link, dest))
         system("{}mkdir -p {}".format(prefix_run, path.dirname(link)))
@@ -60,44 +68,48 @@ def deploy_backup_from_targz():
   print("member_backuped : {}".format(member_backuped))
   with tar.extractfile(member_backuped) as f:
     for line in f:
-      (origin, dest, link) = make_item_and_link(backup_no_targz, line, True)
-      unescaped_origin = origin.replace("\\ ", " ")
-      member = tar.getmember(unescaped_origin)
-      print(member)
-      rand_dirname = ""
-      dirname = path.dirname(dest)
-      system("echo -- mkdir -p {}".format(prefix_run, dirname))
-      if (member.isfile()):
-        print("------ FILE")
-        # make tmp dir (verify it don't already exists)
-        while True:
-          rand_dirname = dirname + "_" + random_string()
-          print("rand_dirname : {}".format(rand_dirname))
-          if (not path.exists(rand_dirname)):
-            break;
-        system("{}mkdir -p {}".format(prefix_run, rand_dirname))
-        # untar in tmp dir
-        tar.extract(member, path=rand_dirname)
-        rand_dirname_origin = rand_dirname + "/" + origin
-        system("{}mv {} {}".format(prefix_run, rand_dirname_origin, dest))
-        # rm tmp dir
-        system("{}rm -rf {}".format(prefix_run, rand_dirname))
-      elif (member.isdir()):
-        print("------ DIR")
-        while True:
-          rand_dirname = dest + "_" + random_string()
-          print("rand_dirname : {}".format(rand_dirname))
-          if (not path.exists(rand_dirname)):
-            break;
-        system("{}mkdir -p {}".format(prefix_run, rand_dirname))
-        # untar in tmp dir
-#        tar.extract(member, path=rand_dirname)
-        rand_dirname_origin = rand_dirname + "/" + origin
-        parent_dest = path.dirname(dest)
-        system("{}mkdir -p {}".format(prefix_run, parent_dest))
-        system("{}mv {} {}".format(prefix_run, rand_dirname_origin, parent_dest))
-        # rm tmp dir
-        system("{}rm -rf {}".format(rand_dirname))
+      line = line.decode("utf-8")
+      (origin, dest, link, make_just_link) = make_item_and_link(backup_no_targz, line, True)
+      if (not make_just_link):
+        unescaped_origin = origin.replace("\\ ", " ")
+        member = tar.getmember(unescaped_origin)
+        print(member)
+        rand_dirname = ""
+        dirname = path.dirname(dest)
+        system("{}mkdir -p {}".format(prefix_run, dirname))
+        if (member.isfile()):
+          print("------ FILE")
+          # make tmp dir (verify it don't already exists)
+          while True:
+            rand_dirname = dirname + "_" + random_string()
+            print("rand_dirname : {}".format(rand_dirname))
+            if (not path.exists(rand_dirname)):
+              break;
+          system("{}mkdir -p {}".format(prefix_run, rand_dirname))
+          # untar in tmp dir
+          if (prefix_run == ""):
+            tar.extract(member, path=rand_dirname)
+          rand_dirname_origin = rand_dirname + "/" + origin
+          system("{}mv {} {}".format(prefix_run, rand_dirname_origin, dest))
+          # rm tmp dir
+          system("{}rm -rf {}".format(prefix_run, rand_dirname))
+        elif (member.isdir()):
+          print("------ DIR")
+          while True:
+            rand_dirname = dest + "_" + random_string()
+            print("rand_dirname : {}".format(rand_dirname))
+            if (not path.exists(rand_dirname)):
+              break;
+          system("{}mkdir -p {}".format(prefix_run, rand_dirname))
+          # untar in tmp dir
+          if (prefix_run == ""):
+            tar.extract(member, path=rand_dirname)
+          rand_dirname_origin = rand_dirname + "/" + origin
+          parent_dest = path.dirname(dest)
+          system("{}mkdir -p {}".format(prefix_run, parent_dest))
+          system("{}mv {} {}".format(prefix_run, rand_dirname_origin, parent_dest))
+          # rm tmp dir
+          system("{}rm -rf {}".format(prefix_run, rand_dirname))
       if (link != ""):
         print("Restoring symlink: {} -> {}".format(link, dest))
         system("{}mkdir -p {}".format(prefix_run, path.dirname(link)))
@@ -128,6 +140,10 @@ if __name__ == '__main__':
                      help="Dry run, print just all the commands that will be run by make_backup")
   args = parser.parse_args()
   backup = args.backup
+  # remove spaces at the beginning of string backup
+  backup = re.sub("^\s*", "", backup)
+  # remove spaces and last / at the end of string backup
+  backup = re.sub("/?\s*$", "", backup)
   if (args.dry):
     print("The following commands will be run by deploy_backup : ")
     prefix_run = "echo "
