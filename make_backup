@@ -4,6 +4,7 @@
 import argparse
 from datetime import date
 from os import path, system
+import re
 import subprocess
 
 dest_backup = "BACKUP"
@@ -13,6 +14,10 @@ def back_all():
   with open(path.expanduser("~/.global-backup")) as f:
     for line in f:
       line = line.replace("\n", "")
+      # remove all blank spaces at the beginning of line
+      line = re.sub("^\s*", "", line)
+      # remove all blank spaces at the end of line
+      line = re.sub("\s*$", "", line)
       print(">> {}".format(line))
       if (path.exists(line)):
         if (path.islink(line)):
