@@ -22,6 +22,18 @@ Edit **~/.make-backup** to configure the files to track.
 
 ## Use
 
+Use: make_backup \[OPTION..] [NAME_BACKUP]
+
+Backup files and folders listed on ~/.global-backup to NAME_BACKUP_date_version or in BACKUP_date_version if used without parameters
+
+Options:
+
+  -c, --compress        Compress the backup in a .tar.gz
+
+  -h, --help            Display this help screen  help = """Use: make_backup \[OPTION..] [NAME_BACKUP]
+
+## Quick start
+
 * Edit **~/.make-backup**, adding one line per file or folder (full path)
 
   Add current folder to **~/.make-backup** :
@@ -31,7 +43,7 @@ Edit **~/.make-backup** to configure the files to track.
 
 * run **make_backup** :
 ```
-    $ make_backup FOLDER_DESTINATION_BACKUP
+    $ make_backup NAME_BACKUP
 ```
 The argument is optional, if not precised, **make_backup** will create the folder BACKUP, acoording to date and version.
 
