@@ -13,7 +13,13 @@ import re
 
 backup = ""
 upercase_and_digits = string.ascii_uppercase + string.digits
-prefix_run = ""
+args = None
+
+def system_and_log(cmd):
+  if (args.verbose or args.dry):
+    system("echo {}".format(cmd))
+  if (not args.dry):
+    system(cmd)
 
 
 def make_item_and_link(backup, line, debug = False):
@@ -50,12 +56,12 @@ def deploy_backup_from_folder():
     for line in f:
       (origin, dest, link, make_just_link) = make_item_and_link(backup, line, True)
       if (not make_just_link):
-        system("{}mkdir -p {}".format(prefix_run, path.dirname(dest)))
-        system("{}cp -r {} {}".format(prefix_run, origin, dest))
+        system_and_log("mkdir -p {}".format(path.dirname(dest)))
+        system_and_log("cp -r {} {}".format(origin, dest))
       if (link != ""):
         print("Restoring symlink: {} -> {}".format(link, dest))
-        system("{}mkdir -p {}".format(prefix_run, path.dirname(link)))
-        system("{}ln -s {} {}".format(prefix_run, dest, link))
+        system_and_log("mkdir -p {}".format(path.dirname(link)))
+        system_and_log("ln -s {} {}".format(dest, link))
 
 def random_string():
   return "".join(random.choice(upercase_and_digits) for _ in range(6))
@@ -76,7 +82,7 @@ def deploy_backup_from_targz():
         print(member)
         rand_dirname = ""
         dirname = path.dirname(dest)
-        system("{}mkdir -p {}".format(prefix_run, dirname))
+        system_and_log("mkdir -p {}".format(dirname))
         if (member.isfile()):
           print("------ FILE")
           # make tmp dir (verify it don't already exists)
@@ -85,14 +91,14 @@ def deploy_backup_from_targz():
             print("rand_dirname : {}".format(rand_dirname))
             if (not path.exists(rand_dirname)):
               break;
-          system("{}mkdir -p {}".format(prefix_run, rand_dirname))
+          system_and_log("mkdir -p {}".format(rand_dirname))
           # untar in tmp dir
-          if (prefix_run == ""):
+          if (not args.dry):
             tar.extract(member, path=rand_dirname)
           rand_dirname_origin = rand_dirname + "/" + origin
-          system("{}mv {} {}".format(prefix_run, rand_dirname_origin, dest))
+          system_and_log("mv {} {}".format(rand_dirname_origin, dest))
           # rm tmp dir
-          system("{}rm -rf {}".format(prefix_run, rand_dirname))
+          system_and_log("rm -rf {}".format(rand_dirname))
         elif (member.isdir()):
           print("------ DIR")
           while True:
@@ -100,20 +106,20 @@ def deploy_backup_from_targz():
             print("rand_dirname : {}".format(rand_dirname))
             if (not path.exists(rand_dirname)):
               break;
-          system("{}mkdir -p {}".format(prefix_run, rand_dirname))
+          system_and_log("mkdir -p {}".format(rand_dirname))
           # untar in tmp dir
-          if (prefix_run == ""):
+          if (not args.dry):
             tar.extract(member, path=rand_dirname)
           rand_dirname_origin = rand_dirname + "/" + origin
           parent_dest = path.dirname(dest)
-          system("{}mkdir -p {}".format(prefix_run, parent_dest))
-          system("{}mv {} {}".format(prefix_run, rand_dirname_origin, parent_dest))
+          system_and_log("mkdir -p {}".format(parent_dest))
+          system_and_log("mv {} {}".format(rand_dirname_origin, parent_dest))
           # rm tmp dir
-          system("{}rm -rf {}".format(prefix_run, rand_dirname))
+          system_and_log("rm -rf {}".format(rand_dirname))
       if (link != ""):
         print("Restoring symlink: {} -> {}".format(link, dest))
-        system("{}mkdir -p {}".format(prefix_run, path.dirname(link)))
-        system("{}ln -s {} {}".format(prefix_run, dest, link))
+        system_and_log("mkdir -p {}".format(path.dirname(link)))
+        system_and_log("ln -s {} {}".format(dest, link))
   tar.close()
 
 
@@ -125,6 +131,7 @@ Deploy backup files and folders and restore symlinks.
 Options:
   -d, --dry             Dry run, print just all the commands that will be run by make_backup
   -h, --help            Display this help screen
+  -v, --verbose         Print each command that will be run
 """
   print(help)
 
@@ -138,6 +145,8 @@ if __name__ == '__main__':
   parser.add_argument("backup", help="Backup folder or file (.tar.gz)")
   parser.add_argument("-d", "--dry", action="store_true",
                      help="Dry run, print just all the commands that will be run by make_backup")
+  parser.add_argument("-v", "--verbose", action="store_true",
+                     help="Print each command that will be run")
   args = parser.parse_args()
   backup = args.backup
   # remove spaces at the beginning of string backup
@@ -146,7 +155,6 @@ if __name__ == '__main__':
   backup = re.sub("/?\s*$", "", backup)
   if (args.dry):
     print("The following commands will be run by deploy_backup : ")
-    prefix_run = "echo "
   if (path.exists(backup)):
     if (path.isdir(backup)):
       print("Deploying backup from dir {}".format(backup))
