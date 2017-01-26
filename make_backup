@@ -84,7 +84,7 @@ if __name__ == '__main__':
   next_v = len(output.split("\n"))
   dest_backup += "_v{}".format(next_v)
   if (args.dry):
-    print("The following commands will be run by deploy_backup : ")
+    print("The following commands will be run by make_backup : ")
     prefix_run = "echo "
   print("Making backup in folder: {}".format(dest_backup))
   system("{}mkdir -p {}".format(prefix_run, dest_backup))
